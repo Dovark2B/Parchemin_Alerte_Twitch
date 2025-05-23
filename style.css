@@ -481,3 +481,56 @@ body {
   }
 }
 
+
+#statusContainer {
+  position: fixed; /* Ou absolute si tu veux qu’il reste lié au parent */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  z-index: 9999;
+  pointer-events: none; /* Pour éviter qu’il gêne les clics */
+  font-size: 6.2rem;
+}
+
+
+.statusConnected {
+	animation-name: statusConnected;
+	animation-duration: 2s;
+	animation-fill-mode: forwards;
+  position: fixed;
+  z-index: 9999;
+}
+
+.statusDisconnected {
+	animation-name: statusDisconnected;
+	animation-duration: 0.5s;
+	animation-fill-mode: forwards;
+  position: fixed;
+  z-index: 9999;
+}
+
+@keyframes statusConnected {
+	0% {
+		opacity: 1;
+		background-color: #2FB774;
+	}
+
+	100% {
+		opacity: 0;
+		background-color: #2FB774;
+	}
+}
+
+@keyframes statusDisconnected {
+	0% {
+		background-color: #D12025;
+	}
+
+	100% {
+		background-color: #D12025;
+	}
+}
