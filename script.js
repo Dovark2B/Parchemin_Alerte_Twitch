@@ -45,7 +45,7 @@ function applyFrenchSpacing(text) {
     .replace(/« /g, '«\u00A0');
 }
 
-function fitText(el, minSize = 18, maxSize = 120) {
+function fitText(el, minSize = 10, maxSize = 160) {
   const container = el.parentElement;
   const originalClip = el.style.clipPath;
   el.style.clipPath = 'none';
@@ -53,9 +53,15 @@ function fitText(el, minSize = 18, maxSize = 120) {
   let fontSize = minSize;
   el.style.fontSize = fontSize + 'px';
 
+  const containerStyle = window.getComputedStyle(container);
+  const paddingX = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+  const paddingY = parseFloat(containerStyle.paddingTop) + parseFloat(containerStyle.paddingBottom);
+
+  const maxWidth = container.clientWidth - paddingX;
+  const maxHeight = container.clientHeight - paddingY;
   while (
-    el.scrollHeight <= container.clientHeight &&
-    el.scrollWidth <= container.clientWidth &&
+    el.scrollHeight <= maxHeight &&
+    el.scrollWidth <= maxWidth &&
     fontSize < maxSize
   ) {
     fontSize++;
@@ -83,9 +89,9 @@ function reverseAnimations() {
 
   void edge.offsetWidth;
   void parchment.offsetWidth;
-  void clip.offsetWidth; // Ajouté
+
 
   edge.classList.add('reversed');
   parchment.classList.add('parchment-reversed');
-  clip.classList.add('animate-in'); // Ajouté
+  clip.classList.add('animate-out'); // Ajouté
 }
