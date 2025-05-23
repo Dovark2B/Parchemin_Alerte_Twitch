@@ -49,6 +49,16 @@ client.on('Twitch.Raid', (response) => {
 	TwitchRaid(response.data);
 })
 
+client.on('Twitch.ChatMessage', (response) => {
+  const message = response.data.message;
+  const username = response.data.user.name;
+
+  // Si la commande !testsub est tapée dans le chat
+  if (message.trim().toLowerCase() === '!testsub') {
+    previewSub(username); // ou un pseudo fixe si tu préfères
+  }
+});
+
 // Connexion à Streamer.bot 
 function SetConnectionStatus(connected) {
   let statusContainer = document.getElementById("statusContainer");
