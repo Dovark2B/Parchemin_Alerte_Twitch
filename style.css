@@ -28,7 +28,7 @@ body {
   max-width: 1000px;
   height: 800px;
   position: relative;
-  
+
 }
 
 .parchment-container {
@@ -75,7 +75,8 @@ body {
 
 .content-box {
   width: 80%;
-  height: 80%; /* ← ajuste selon ton design */
+  height: 80%;
+  /* ← ajuste selon ton design */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -87,6 +88,19 @@ body {
   left: 10px;
 }
 
+.logo {
+  height: 70%;
+  width: 70%;
+
+  background-image: url('assets/logo_echoppe_dame_evanah_gold.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: fixed;
+  z-index: 3;
+  opacity: 0.4;
+  filter: brightness(0.7) hue-rotate(-10deg) contrast(1.1) saturate(0.8)
+}
 
 .message {
   text-align: center;
@@ -95,9 +109,38 @@ body {
   line-height: 1.4;
   word-break: break-word;
   white-space: pre-wrap;
-  max-width: 100%;
+  max-width: 120%;
+  position: absolute;
   opacity: 1;
+  z-index: 4;
 
+}
+
+span.user {
+  color: #c6a855;
+  font-weight: bold;
+  
+  text-shadow: 1px 2px 5px black, 1px 2px 5px black, 1px 2px 5px black, 1px 2px 5px black, 1px 2px 5px black, 1px 2px 5px black,1px 2px 5px black;
+
+  
+}
+
+span.recipient,
+span.value {
+  color: #C6A855;
+  font-weight: bold;
+
+  text-shadow: 1px 2px 5px black, 1px 2px 5px black, 1px 2px 5px black, 1px 2px 5px black, 1px 2px 5px black, 1px 2px 5px black,1px 2px 5px black;
+}
+
+span.bits,
+span.gifts,
+span.viewers,
+span.month {
+  color: #C6A855;
+  font-weight: bold;
+
+  text-shadow: 1px 2px 5px black, 1px 2px 5px black, 1px 2px 5px black, 1px 2px 5px black, 1px 2px 5px black, 1px 2px 5px black,1px 2px 5px black;
 }
 
 .fake-right-edge {
@@ -128,7 +171,7 @@ body {
   animation-duration: 2.9s;
   animation-timing-function: ease-in-out;
   animation-fill-mode: forwards;
-  animation-delay: 0.25s;
+  animation-delay: 0.3s;
   opacity: 1;
   transition: opacity 0.3s ease;
 }
@@ -483,7 +526,8 @@ body {
 
 
 #statusContainer {
-  position: fixed; /* Ou absolute si tu veux qu’il reste lié au parent */
+  position: fixed;
+  /* Ou absolute si tu veux qu’il reste lié au parent */
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -492,45 +536,46 @@ body {
   border-radius: 6px;
   font-weight: bold;
   z-index: 9999;
-  pointer-events: none; /* Pour éviter qu’il gêne les clics */
+  pointer-events: none;
+  /* Pour éviter qu’il gêne les clics */
   font-size: 6.2rem;
 }
 
 
 .statusConnected {
-	animation-name: statusConnected;
-	animation-duration: 2s;
-	animation-fill-mode: forwards;
+  animation-name: statusConnected;
+  animation-duration: 2s;
+  animation-fill-mode: forwards;
   position: fixed;
   z-index: 9999;
 }
 
 .statusDisconnected {
-	animation-name: statusDisconnected;
-	animation-duration: 0.5s;
-	animation-fill-mode: forwards;
+  animation-name: statusDisconnected;
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
   position: fixed;
   z-index: 9999;
 }
 
 @keyframes statusConnected {
-	0% {
-		opacity: 1;
-		background-color: #2FB774;
-	}
+  0% {
+    opacity: 1;
+    background-color: #2FB774;
+  }
 
-	100% {
-		opacity: 0;
-		background-color: #2FB774;
-	}
+  100% {
+    opacity: 0;
+    background-color: #2FB774;
+  }
 }
 
 @keyframes statusDisconnected {
-	0% {
-		background-color: #D12025;
-	}
+  0% {
+    background-color: #D12025;
+  }
 
-	100% {
-		background-color: #D12025;
-	}
+  100% {
+    background-color: #D12025;
+  }
 }
