@@ -1,4 +1,5 @@
 @import url('../style.css');
+
 body {
   background: #181818;
   color: #222;
@@ -6,31 +7,56 @@ body {
   margin: 0;
   padding: 0;
 }
-#settings-panel {
-  max-width: 600px;
-  margin: 2rem auto;
-  background: #fff;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 2px 12px #0002;
+
+#settings-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  height: 100vh;
+  box-sizing: border-box;
 }
-#preview-area {
+
+#settings-sidebar {
+  width: 370px;
+  min-width: 320px;
+  max-width: 400px;
+  height: 100vh;
+  background: #fff;
+  border-radius: 0 12px 12px 0;
+  box-shadow: 2px 0 12px #0002;
+  padding: 2rem 1.5rem 2rem 2rem;
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+  flex-shrink: 0;
+}
+
+#settings-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 2rem 0 2rem 2rem;
+  min-width: 1200px;
+  height: 100vh;
+  overflow: auto;
+}
+
+#settings-preview h2 {
+  margin-top: 0;
+}
+
+#preview-iframe {
   width: 1200px;
   height: 600px;
-  min-width: 1200px;
-  min-height: 600px;
-  max-width: 1200px;
-  max-height: 600px;
-  margin: 0 auto 2rem auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f5dc;
+  border: none;
   border-radius: 12px;
-  border: 1px solid #e0cfa9;
   overflow: hidden;
-  position: relative;
+  background: #f5f5dc;
+  box-shadow: 0 2px 12px #0002;
 }
+
 label {
   display: block;
   margin: 1rem 0 0.5rem 0;

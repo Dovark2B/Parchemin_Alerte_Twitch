@@ -128,7 +128,7 @@ body {
   animation-duration: 2.9s;
   animation-timing-function: ease-in-out;
   animation-fill-mode: forwards;
-  animation-delay: 0.3s;
+  animation-delay: 0.25s;
   opacity: 1;
   transition: opacity 0.3s ease;
 }
@@ -145,8 +145,8 @@ body {
       rgba(8, 4, 0, 0.952) 50%,
       rgba(255, 200, 100, 0.05) 100%);
   opacity: 0;
-  animation: moveHighlight 2s ease-in-out forwards;
-  animation-delay: 2.2s;
+  animation: moveHighlight 1.8s ease-in-out forwards;
+  animation-delay: 1.3s;
   pointer-events: none;
   z-index: 3;
   filter: blur(1px);
@@ -181,7 +181,7 @@ body {
 
   12% {
 
-    opacity: 0.5;
+    opacity: 0.4;
     filter: blur(0.5px);
   }
 
@@ -205,7 +205,7 @@ body {
 
   68% {
 
-    opacity: 0.6;
+    opacity: 0.45;
     filter: blur(0.5px);
   }
 
@@ -236,8 +236,8 @@ body {
       rgba(238, 205, 85, 0.445) 50%,
       rgba(8, 5, 0, 0.911) 100%);
   opacity: 0;
-  animation: moveHighlight2 2s ease-in-out forwards;
-  animation-delay: 2.2s;
+  animation: moveHighlight2 1.8s ease-in-out forwards;
+  animation-delay: 1.3s;
   pointer-events: none;
   z-index: 3;
   filter: blur(0.8px);
@@ -268,13 +268,13 @@ body {
 }
 
 .fake-right-edge.reversed::after {
-  animation: moveHighlightBack 2.3s ease-in-out forwards !important;
+  animation: moveHighlightBack 1.8s ease-in-out forwards !important;
   animation-delay: 0.3s !important;
 
 }
 
 .fake-right-edge.reversed::before {
-  animation: moveHighlight2Back 2.3s ease-in-out forwards !important;
+  animation: moveHighlight2Back 1.8s ease-in-out forwards !important;
   animation-delay: 0.3s !important;
 
 }
@@ -283,7 +283,7 @@ body {
 @keyframes moveHighlight2 {
   0% {
 
-    opacity: 0.3;
+    opacity: 0.2;
     filter: blur(0.5px);
   }
 
@@ -295,7 +295,7 @@ body {
 
   25% {
 
-    opacity: 0.6;
+    opacity: 0.55;
     filter: blur(0.5px);
   }
 
@@ -307,7 +307,7 @@ body {
 
   50% {
 
-    opacity: 0.5;
+    opacity: 0.45;
     filter: blur(0.5px);
   }
 
@@ -319,7 +319,7 @@ body {
 
   90% {
 
-    opacity: 0;
+    opacity: 0.15;
     filter: blur(0.5px);
   }
 

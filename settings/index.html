@@ -9,37 +9,82 @@
 </head>
 
 <body>
-    <div id="settings-panel">
-        <h2>Prévisualisation</h2>
-        <div id="preview-area">
-            <!-- Ici sera injecté l’alerte -->
+    <div id="settings-layout">
+        <div id="settings-sidebar">
+            <h2>Paramètres</h2>
+            <form id="settings-form">
+                <fieldset>
+                    <legend>Follow</legend>
+                    <label>
+                        Texte :
+                        <input type="text" id="followText" value="Merci du follow %pseudo% !" />
+                    </label>
+                    <label>
+                        Couleur :
+                        <input type="color" id="followColor" value="#331e01" />
+                    </label>
+                    <button type="button" id="triggerFollow">Simuler Follow</button>
+                </fieldset>
+                <fieldset>
+                    <legend>Sub</legend>
+                    <label>
+                        Texte :
+                        <input type="text" id="subText" value="Merci pour le sub %pseudo% !" />
+                    </label>
+                    <label>
+                        Couleur :
+                        <input type="color" id="subColor" value="#007bff" />
+                    </label>
+                    <button type="button" id="triggerSub">Simuler Sub</button>
+                </fieldset>
+                <fieldset>
+                    <legend>Bits</legend>
+                    <label>
+                        Texte :
+                        <input type="text" id="bitsText" value="Merci pour les bits %pseudo% !" />
+                    </label>
+                    <label>
+                        Couleur :
+                        <input type="color" id="bitsColor" value="#a100ff" />
+                    </label>
+                    <button type="button" id="triggerBits">Simuler Bits</button>
+                </fieldset>
+                <fieldset>
+                    <legend>Raid</legend>
+                    <label>
+                        Texte :
+                        <input type="text" id="raidText" value="Raid de %pseudo% !" />
+                    </label>
+                    <label>
+                        Couleur :
+                        <input type="color" id="raidColor" value="#ff0055" />
+                    </label>
+                    <button type="button" id="triggerRaid">Simuler Raid</button>
+                </fieldset>
+                <label>
+                    Police :
+                    <input type="text" id="fontFamily" value="Georgia, serif" />
+                </label>
+  
+                <label>
+                    <input type="checkbox" id="showPseudo" checked /> Afficher le pseudo
+                </label>
+                <label>
+                    <input type="checkbox" id="showAvatar" checked /> Afficher l'avatar
+                </label>
+                <label>
+                    URL de l’alerte personnalisée :
+                    <input type="text" id="alertUrl" readonly style="width:100%;margin-top:1rem;">
+                </label>
+                <button type="button" id="copyAlertUrl">Copier l’URL</button>
+                <button type="button" id="refreshPreview">🔄 Actualiser l’aperçu</button>
+            </form>
         </div>
-        <h2>Paramètres</h2>
-        <form id="settings-form">
-            <label>
-                Texte personnalisé :
-                <input type="text" id="customText" value="Merci du follow %pseudo% !" />
-            </label>
-            <label>
-                Police :
-                <input type="text" id="fontFamily" value="Georgia, serif" />
-            </label>
-            <label>
-                Couleur du texte :
-                <input type="color" id="fontColor" value="#331e01" />
-            </label>
-            <label>
-                <input type="checkbox" id="showPseudo" checked />
-                Afficher le pseudo
-            </label>
-            <label>
-                <input type="checkbox" id="showAvatar" checked />
-                Afficher la photo de profil
-            </label>
-            <button type="button" id="triggerFollow">Simuler Follow</button>
-            <button type="button" id="triggerSub">Simuler Sub</button>
-            <button type="button" id="triggerCheer">Simuler Cheer</button>
-        </form>
+        <!-- Ajoute ce bloc pour la preview à droite -->
+        <div id="settings-preview">
+            <iframe id="preview-iframe" src="../index.html"
+                style="width:1200px;height:600px;border:none;border-radius:12px;overflow:hidden;"></iframe>
+        </div>
     </div>
     <script src="settings.js"></script>
 </body>
