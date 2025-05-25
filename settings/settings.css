@@ -3,7 +3,7 @@
 body {
   background: #181818;
   color: #222;
-  font-family: Arial, sans-serif;
+  font-family: Cinzel, serif;
   margin: 0;
   padding: 0;
 }
@@ -29,6 +29,8 @@ body {
   position: sticky;
   top: 0;
   flex-shrink: 0;
+  font-family: Cinzel, serif;
+  color: #331e01;
 }
 
 #settings-preview {
@@ -60,10 +62,14 @@ body {
 label {
   display: block;
   margin: 1rem 0 0.5rem 0;
+  font-family: Cinzel, serif;
 }
-input[type="text"], input[type="color"] {
+
+input[type="text"],
+input[type="color"] {
   margin-left: 0.5rem;
 }
+
 button {
   margin: 1rem 0.5rem 0 0;
   padding: 0.5rem 1rem;
@@ -73,7 +79,14 @@ button {
   color: #331e01;
   font-weight: bold;
   cursor: pointer;
+  font-family: Cinzel, serif;
 }
+
 .avatar {
   vertical-align: middle;
+}
+
+.pseudo-colored {
+  color: var(--pseudo-color);
+  font-weight: bold;
 }

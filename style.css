@@ -9,6 +9,11 @@ body {
   overflow: hidden;
 }
 
+.pseudo-colored {
+  color: var(--pseudo-color);
+  font-weight: bold;
+}
+
 .start-hidden {
   opacity: 0;
 }

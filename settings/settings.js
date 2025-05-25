@@ -7,8 +7,8 @@ const bitsColor = document.getElementById('bitsColor');
 const raidText = document.getElementById('raidText');
 const raidColor = document.getElementById('raidColor');
 const fontFamily = document.getElementById('fontFamily');
-const showPseudo = document.getElementById('showPseudo');
-const showAvatar = document.getElementById('showAvatar');
+const pseudoColor = document.getElementById('pseudoColor');
+const alertUrl = document.getElementById('alertUrl');
 const previewIframe = document.getElementById('preview-iframe');
 const simButtons = [
   document.getElementById('triggerFollow'),
@@ -29,45 +29,44 @@ function updateAlertUrl() {
     raidText: raidText.value,
     raidColor: raidColor.value,
     fontFamily: fontFamily.value,
-    showPseudo: showPseudo.checked,
-    showAvatar: showAvatar.checked
+    pseudoColor: pseudoColor.value
   });
-  const url = `${location.origin.replace('/settings','')}/?${params.toString()}`;
-  document.getElementById('alertUrl').value = url;
+  const baseUrl = `${location.origin.replace(/\/settings.*/, '')}/index.html`;
+  alertUrl.value = `${baseUrl}?${params.toString()}`;
 }
 
 function sendOptionsToIframe(type = null) {
-  const iframe = document.getElementById('preview-iframe');
+  const iframe = previewIframe;
   iframe.contentWindow.postMessage({
     type: type || 'updateOptions',
-    followText: followText.value,
-    followColor: followColor.value,
-    subText: subText.value,
-    subColor: subColor.value,
-    bitsText: bitsText.value,
-    bitsColor: bitsColor.value,
-    raidText: raidText.value,
-    raidColor: raidColor.value,
-    fontFamily: fontFamily.value,
-    showPseudo: showPseudo.checked,
-    showAvatar: showAvatar.checked
+    options: {
+      followText: followText.value,
+      followColor: followColor.value,
+      subText: subText.value,
+      subColor: subColor.value,
+      bitsText: bitsText.value,
+      bitsColor: bitsColor.value,
+      raidText: raidText.value,
+      raidColor: raidColor.value,
+      fontFamily: fontFamily.value,
+      pseudoColor: pseudoColor.value
+    }
   }, '*');
 }
 
-// À chaque input, juste update l'aperçu statique
 [
   followText, followColor, subText, subColor,
   bitsText, bitsColor, raidText, raidColor,
-  fontFamily, showPseudo, showAvatar
+  fontFamily, pseudoColor
 ].forEach(input => {
   input.addEventListener('input', () => {
     updateAlertUrl();
-    sendOptionsToIframe(); // type = null => preview statique
+    sendOptionsToIframe();
   });
 });
 
 let animationLock = false;
-const ANIMATION_DURATION = 9000; // ms, adapte à la durée réelle de ton animation
+const ANIMATION_DURATION = 9000;
 
 function triggerSim(type) {
   if (animationLock) return;
@@ -87,6 +86,55 @@ document.getElementById('triggerRaid').onclick = () => triggerSim('raid');
 
 previewIframe.addEventListener('load', () => {
   simButtons.forEach(btn => btn.disabled = false);
-  // Envoie les options à l'iframe dès qu'elle est prête
   sendOptionsToIframe();
+});
+
+// Listener dans l'index.html (ou parchemin.html) pour appliquer les options envoyées
+window.addEventListener("message", (event) => {
+  const { type, options } = event.data;
+  if (!options) return;
+
+  const messageDiv = document.querySelector(".message");
+  if (!messageDiv) return;
+
+  // Préparer les données selon l'événement
+  let baseText = "";
+
+  let userName = `<span class="pseudo-colored">TestViewer</span>`;
+
+  switch (type) {
+    case "follow":
+      baseText = options.followText;
+      textColor = options.followColor;
+      break;
+    case "sub":
+      baseText = options.subText;
+      textColor = options.subColor;
+      break;
+    case "bits":
+      baseText = options.bitsText;
+      textColor = options.bitsColor;
+      break;
+    case "raid":
+      baseText = options.raidText;
+      textColor = options.raidColor;
+      break;
+    case "updateOptions":
+      return;
+    default:
+      return;
+  }
+
+  // Remplace le pseudo dynamiquement
+  const parsedText = baseText?.replace(/%pseudo%/g, userName);
+
+  // Appliquer les styles
+  messageDiv.innerHTML = parsedText;
+  messageDiv.style.color = textColor;
+  messageDiv.style.setProperty('--pseudo-color', options.pseudoColor);
+  if (options.fontFamily) {
+    messageDiv.style.fontFamily = options.fontFamily;
+  }
+
+  launchAnimation(parsedText);
 });

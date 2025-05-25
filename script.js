@@ -304,3 +304,52 @@ if (SHOW_TEST_ALERT_ON_LOAD) {
         updateAlertContainer(mockData);
     });
 }
+
+// Changement des paramètres via settings
+window.addEventListener("message", (event) => {
+  const { type, options } = event.data;
+  if (!options) return;
+
+  const messageDiv = document.querySelector(".message");
+  if (!messageDiv) return;
+
+  // Appliquer la police
+  if (options.fontFamily) {
+    messageDiv.style.fontFamily = options.fontFamily;
+  }
+
+  // Détermine le texte et la couleur selon le type
+  let text = "";
+  let textColor = "#331e01";
+  const pseudo = `<span class="pseudo-colored">TestViewer</span>`;
+
+  switch (type) {
+    case "follow":
+      text = options.followText?.replace(/%pseudo%/g, pseudo);
+      textColor = options.followColor;
+      break;
+    case "sub":
+      text = options.subText?.replace(/%pseudo%/g, pseudo);
+      textColor = options.subColor;
+      break;
+    case "bits":
+      text = options.bitsText?.replace(/%pseudo%/g, pseudo);
+      textColor = options.bitsColor;
+      break;
+    case "raid":
+      text = options.raidText?.replace(/%pseudo%/g, pseudo);
+      textColor = options.raidColor;
+      break;
+    case "updateOptions":
+      return;
+    default:
+      return;
+  }
+
+  // Appliquer les styles
+  messageDiv.innerHTML = text;
+  messageDiv.style.color = textColor;
+  messageDiv.style.setProperty('--pseudo-color', options.pseudoColor);
+
+  launchAnimation(text);
+});
