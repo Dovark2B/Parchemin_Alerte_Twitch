@@ -35,11 +35,15 @@ const eventResponseStructure = {
     },
     "Twitch.GiftSub": {
         title: ["[recipient] a reçu un sub !"],
-        message: ["Merci [user] pour le sub offert !"]
+        message: ["Merci [user] pour le sub offert a [recipient] !"]
     },
     "Twitch.GiftBomb": {
         title: ["[user] régale !"],
         message: ["[user] a offert [gifts] subs, merci !"]
+    },
+    "TipeeeStream.Donation": {
+        title: ["Nouveau don ! 🎉"],
+        message: ["Merci [user] pour ton don de [amount] € !"]
     }
 };
 
@@ -86,11 +90,15 @@ function updateAlertContainer(data) {
     }
 
     const userName = data?.data?.user_name || data?.data?.user?.name || "DovarkLeBG";
-    const recipient = data?.data?.recipient?.name || "LaMoche";
+    const recipient = data?.data?.recipient?.name
+        || data?.data?.recipientUser
+        || data?.data?.recipientUserName
+        || "LaMoche";
     const bits = data?.data?.bits || "696969";
     const months = data?.data?.cumulativeMonths || "69";
     const gifts = data?.data?.gifts || "69";
     const viewers = data?.data?.viewerCount || "696969";
+    const amount = data?.data?.amount || "0";
 
     let message = replaceToken(
         selectRandomItemFromArray(
@@ -107,10 +115,10 @@ function updateAlertContainer(data) {
         .replace(/\[bits\]/g, `<span class="value">${bits}</span>`)
         .replace(/\[months\]/g, `<span class="month">${months}</span>`)
         .replace(/\[gifts\]/g, `<span class="gifts">${gifts}</span>`)
-        .replace(/\[viewers\]/g, `<span class="viewers">${viewers}</span>`);
+        .replace(/\[viewers\]/g, `<span class="viewers">${viewers}</span>`)
+        .replace(/\[amount\]/g, `<span class="amount">${amount}</span>`);
 
     showAlert(message);
-    triggerAnimation();
 }
 
 
@@ -256,11 +264,37 @@ const client = new StreamerbotClient({
         if (DEBUG_MODE) console.log("Streamer.bot event:", data);
 
         const eventName = getEventStamp(data?.event);
+
+        // Si c'est un event Twitch/TipeeeStream connu
         if (Object.keys(eventResponseStructure).includes(eventName)) {
             updateAlertContainer(data);
             SetConnectionStatus(true);
+            return;
+        }
+
+        // Si c'est un event Custom (test trigger Streamer.bot)
+        if (data?.event?.source === "General" && data?.event?.type === "Custom") {
+            // On transmet TOUT le payload du trigger, pas un objet simplifié
+            window.dispatchEvent(new CustomEvent("CustomEvent", {
+                detail: data.data // <-- ici, on envoie tout le data du trigger
+            }));
+            SetConnectionStatus(true);
+            return;
         }
     }
+});
+
+window.addEventListener('open', () => {
+  console.log(`✨ WS connecté à ${WS_URL}`);
+
+  // On s'abonne aux événements Custom (catégorie General)
+  window.send(JSON.stringify({
+    request: "Subscribe",
+    id:      "sub_custom",
+    events: {
+      "General": ["Custom"]
+    }
+  }));
 });
 
 function SetConnectionStatus(connected) {
@@ -294,10 +328,10 @@ if (SHOW_TEST_ALERT_ON_LOAD) {
                 user_name: "DovarkleBG",
                 user: { name: "DodoLeBG" },
                 recipient: { name: "LaMoche" },
-                bits: 123,
+                bits: 12300,
                 cumulativeMonths: 6,
                 gifts: 5,
-                viewerCount: 42
+                viewerCount: 5000,
             }
         };
 
@@ -305,51 +339,51 @@ if (SHOW_TEST_ALERT_ON_LOAD) {
     });
 }
 
-// Changement des paramètres via settings
-window.addEventListener("message", (event) => {
-  const { type, options } = event.data;
-  if (!options) return;
 
-  const messageDiv = document.querySelector(".message");
-  if (!messageDiv) return;
 
-  // Appliquer la police
-  if (options.fontFamily) {
-    messageDiv.style.fontFamily = options.fontFamily;
-  }
+window.addEventListener("CustomEvent", (event) => {
+    const data = event.detail || {};
 
-  // Détermine le texte et la couleur selon le type
-  let text = "";
-  let textColor = "#331e01";
-  const pseudo = `<span class="pseudo-colored">TestViewer</span>`;
+    // Ajoute ce log pour voir toutes les variables reçues
+    console.log("CustomEvent reçu :", data);
 
-  switch (type) {
-    case "follow":
-      text = options.followText?.replace(/%pseudo%/g, pseudo);
-      textColor = options.followColor;
-      break;
-    case "sub":
-      text = options.subText?.replace(/%pseudo%/g, pseudo);
-      textColor = options.subColor;
-      break;
-    case "bits":
-      text = options.bitsText?.replace(/%pseudo%/g, pseudo);
-      textColor = options.bitsColor;
-      break;
-    case "raid":
-      text = options.raidText?.replace(/%pseudo%/g, pseudo);
-      textColor = options.raidColor;
-      break;
-    case "updateOptions":
-      return;
-    default:
-      return;
-  }
+    // Type d'event
+    const type = (data.type || "follow").toLowerCase();
 
-  // Appliquer les styles
-  messageDiv.innerHTML = text;
-  messageDiv.style.color = textColor;
-  messageDiv.style.setProperty('--pseudo-color', options.pseudoColor);
+    // Source et type pour eventResponseStructure
+    let eventSource = "Twitch";
+    let eventType = "Follow";
+    if (type.includes("sub") && type.includes("gift")) eventType = "GiftSub";
+    else if (type.includes("giftbomb")) eventType = "GiftBomb";
+    else if (type.includes("sub")) eventType = "Sub";
+    else if (type.includes("follow")) eventType = "Follow";
+    else if (type.includes("cheer") || type.includes("bits")) eventType = "Cheer";
+    else if (type.includes("raid")) eventType = "Raid";
+    else if (type.includes("donation") || type.includes("tipeee")) {
+        eventSource = "TipeeeStream";
+        eventType = "Donation";
+    }
 
-  launchAnimation(text);
+    // Utilise directement les variables du trigger
+    const fakeData = {
+        event: {
+            source: eventSource,
+            type: eventType
+        },
+        data: {
+            user_name: data.userName || data.user || data.username || "ViewerTest",
+            user: { name: data.userName || data.user || data.username || "ViewerTest" },
+            recipient: { name: data.recipientUser || data.recipientUserName || "LaMoche" },
+            bits: data.bits,
+            cumulativeMonths: data.months,
+            gifts: data.gifts,
+            viewerCount: data.viewers,
+            amount: data.amount,
+            message: data.message,
+            currency: data.currency,
+            // ...
+        }
+    };
+
+    updateAlertContainer(fakeData);
 });

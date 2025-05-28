@@ -141,7 +141,8 @@ span.value {
 span.bits,
 span.gifts,
 span.viewers,
-span.month {
+span.month,
+span.amount {
   color: #C6A855;
   font-weight: bold;
 
