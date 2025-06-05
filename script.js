@@ -199,34 +199,94 @@ function applyFrenchSpacing(text) {
 }
 
 
-function fitText(el, minSize = 90, maxSize = 200) {
-    const container = el.parentElement;
-    const originalClip = el.style.clipPath;
-    el.style.clipPath = 'none';
+/**
+ * Ajuste dynamiquement la taille de police d'un élément pour qu'il occupe
+ * tout l'espace disponible sans déborder (sauf une petite tolérance), 
+ * en restant entre minSize et maxSize (px).
+ */
+function fitText(el, minSize = 120, maxSize = 200) {
+  const container = el.parentElement;
+  if (!container) return;
 
-    let fontSize = minSize;
+  // Désactiver temporairement le clip-path pour mesurer correctement
+  const originalClip = el.style.clipPath;
+  el.style.clipPath = 'none';
+
+  // Autoriser le wrapping et forcer box-sizing pour ne pas avoir de calculs bizarres
+  el.style.whiteSpace = 'normal';
+  el.style.display    = 'inline-block';
+  el.style.boxSizing  = 'border-box';
+
+  // Récupérer le padding du parent
+  const containerStyle = window.getComputedStyle(container);
+  const paddingX = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+  const paddingY = parseFloat(containerStyle.paddingTop)  + parseFloat(containerStyle.paddingBottom);
+
+  // Calculer l'espace dispo à l'intérieur du parent
+  const maxWidth  = container.clientWidth  - paddingX;
+  const maxHeight = container.clientHeight - paddingY;
+
+  // Fixer la largeur pour que le texte wrap correctement
+  el.style.width = maxWidth + 'px';
+
+  // On autorise un débord de hauteur de 5 % pour laisser la police plus large
+  const heightTolerance = maxHeight * 0.05;
+
+  let low  = minSize;
+  let high = maxSize;
+  let best = minSize;
+
+  function fits(fontSize) {
     el.style.fontSize = fontSize + 'px';
+    // On accepte scrollHeight jusqu'à maxHeight + tolerance
+    return (
+      el.scrollWidth <= maxWidth &&
+      el.scrollHeight <= (maxHeight + heightTolerance)
+    );
+  }
 
-    const containerStyle = window.getComputedStyle(container);
-    const paddingX = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
-    const paddingY = parseFloat(containerStyle.paddingTop) + parseFloat(containerStyle.paddingBottom);
-
-    const maxWidth = container.clientWidth - paddingX;
-    const maxHeight = container.clientHeight - paddingY;
-
-    while (el.scrollHeight <= maxHeight && el.scrollWidth <= maxWidth && fontSize < maxSize) {
-        fontSize++;
-        el.style.fontSize = fontSize + 'px';
+  if (!fits(low)) {
+    let testSize = low;
+    while (testSize > 1 && !fits(testSize)) {
+      testSize = Math.floor(testSize * 0.9);
     }
+    best = Math.max(testSize, 1);
+  } else {
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      if (fits(mid)) {
+        best = mid;
+        low  = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+  }
 
-    fontSize--;
-    el.style.fontSize = fontSize + 'px';
-    el.style.clipPath = originalClip;
+  el.style.fontSize = best + 'px';
+  el.style.clipPath = originalClip;
 }
+
+function makeTextFit(el, minSize = 120, maxSize = 200) {
+  fitText(el, minSize, maxSize);
+
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(() => {
+      fitText(el, minSize, maxSize);
+    });
+    ro.observe(el.parentElement);
+  } else {
+    window.addEventListener('resize', () => {
+      fitText(el, minSize, maxSize);
+    });
+  }
+}
+
+
 
 window.addEventListener('resize', () => {
     const message = document.querySelector('.message');
-    fitText(message);
+    makeTextFit(message, 120, 200);
 });
 
 function showAlert(text = "Alerte") {
@@ -244,7 +304,8 @@ function showAlert(text = "Alerte") {
     messageDiv.style.fontFamily = "'Cinzel', Georgia, serif";
     messageDiv.style.color = "#331e01";
 
-    fitText(messageDiv);
+    makeTextFit(messageDiv, 120, 200);
+
     launchAnimation();
 }
 
@@ -386,4 +447,12 @@ window.addEventListener("CustomEvent", (event) => {
     };
 
     updateAlertContainer(fakeData);
+});
+
+window.addEventListener('load', () => {
+  const msg = document.querySelector('.message');
+  if (msg) {
+    // On veut une police mini=120px, maxi=200px
+    makeTextFit(msg, 120, 200);
+  }
 });
