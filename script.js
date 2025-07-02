@@ -1,5 +1,5 @@
 const DEBUG_MODE = false;
-const SHOW_TEST_ALERT_ON_LOAD = true;
+const SHOW_TEST_ALERT_ON_LOAD = false;
 
 const defaultEventDisplayTime = 10000;
 const supressGiftBombSubEvents = true;
@@ -89,7 +89,12 @@ function updateAlertContainer(data) {
         return;
     }
 
-    const userName = data?.data?.user_name || data?.data?.user?.name || "DovarkLeBG";
+    const userName =
+        data?.data?.user?.name       
+        || data?.data?.username     
+        || data?.data?.displayName  
+        || data?.data?.user_name    
+        || "Invité";
     const recipient = data?.data?.recipient?.name
         || data?.data?.recipientUser
         || data?.data?.recipientUserName
@@ -205,81 +210,81 @@ function applyFrenchSpacing(text) {
  * en restant entre minSize et maxSize (px).
  */
 function fitText(el, minSize = 120, maxSize = 200) {
-  const container = el.parentElement;
-  if (!container) return;
+    const container = el.parentElement;
+    if (!container) return;
 
-  // Désactiver temporairement le clip-path pour mesurer correctement
-  const originalClip = el.style.clipPath;
-  el.style.clipPath = 'none';
+    // Désactiver temporairement le clip-path pour mesurer correctement
+    const originalClip = el.style.clipPath;
+    el.style.clipPath = 'none';
 
-  // Autoriser le wrapping et forcer box-sizing pour ne pas avoir de calculs bizarres
-  el.style.whiteSpace = 'normal';
-  el.style.display    = 'inline-block';
-  el.style.boxSizing  = 'border-box';
+    // Autoriser le wrapping et forcer box-sizing pour ne pas avoir de calculs bizarres
+    el.style.whiteSpace = 'normal';
+    el.style.display = 'inline-block';
+    el.style.boxSizing = 'border-box';
 
-  // Récupérer le padding du parent
-  const containerStyle = window.getComputedStyle(container);
-  const paddingX = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
-  const paddingY = parseFloat(containerStyle.paddingTop)  + parseFloat(containerStyle.paddingBottom);
+    // Récupérer le padding du parent
+    const containerStyle = window.getComputedStyle(container);
+    const paddingX = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+    const paddingY = parseFloat(containerStyle.paddingTop) + parseFloat(containerStyle.paddingBottom);
 
-  // Calculer l'espace dispo à l'intérieur du parent
-  const maxWidth  = container.clientWidth  - paddingX;
-  const maxHeight = container.clientHeight - paddingY;
+    // Calculer l'espace dispo à l'intérieur du parent
+    const maxWidth = container.clientWidth - paddingX;
+    const maxHeight = container.clientHeight - paddingY;
 
-  // Fixer la largeur pour que le texte wrap correctement
-  el.style.width = maxWidth + 'px';
+    // Fixer la largeur pour que le texte wrap correctement
+    el.style.width = maxWidth + 'px';
 
-  // On autorise un débord de hauteur de 5 % pour laisser la police plus large
-  const heightTolerance = maxHeight * 0.05;
+    // On autorise un débord de hauteur de 5 % pour laisser la police plus large
+    const heightTolerance = maxHeight * 0.05;
 
-  let low  = minSize;
-  let high = maxSize;
-  let best = minSize;
+    let low = minSize;
+    let high = maxSize;
+    let best = minSize;
 
-  function fits(fontSize) {
-    el.style.fontSize = fontSize + 'px';
-    // On accepte scrollHeight jusqu'à maxHeight + tolerance
-    return (
-      el.scrollWidth <= maxWidth &&
-      el.scrollHeight <= (maxHeight + heightTolerance)
-    );
-  }
-
-  if (!fits(low)) {
-    let testSize = low;
-    while (testSize > 1 && !fits(testSize)) {
-      testSize = Math.floor(testSize * 0.9);
+    function fits(fontSize) {
+        el.style.fontSize = fontSize + 'px';
+        // On accepte scrollHeight jusqu'à maxHeight + tolerance
+        return (
+            el.scrollWidth <= maxWidth &&
+            el.scrollHeight <= (maxHeight + heightTolerance)
+        );
     }
-    best = Math.max(testSize, 1);
-  } else {
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      if (fits(mid)) {
-        best = mid;
-        low  = mid + 1;
-      } else {
-        high = mid - 1;
-      }
-    }
-  }
 
-  el.style.fontSize = best + 'px';
-  el.style.clipPath = originalClip;
+    if (!fits(low)) {
+        let testSize = low;
+        while (testSize > 1 && !fits(testSize)) {
+            testSize = Math.floor(testSize * 0.9);
+        }
+        best = Math.max(testSize, 1);
+    } else {
+        while (low <= high) {
+            const mid = Math.floor((low + high) / 2);
+            if (fits(mid)) {
+                best = mid;
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+    }
+
+    el.style.fontSize = best + 'px';
+    el.style.clipPath = originalClip;
 }
 
 function makeTextFit(el, minSize = 120, maxSize = 200) {
-  fitText(el, minSize, maxSize);
+    fitText(el, minSize, maxSize);
 
-  if (typeof ResizeObserver !== 'undefined') {
-    const ro = new ResizeObserver(() => {
-      fitText(el, minSize, maxSize);
-    });
-    ro.observe(el.parentElement);
-  } else {
-    window.addEventListener('resize', () => {
-      fitText(el, minSize, maxSize);
-    });
-  }
+    if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(() => {
+            fitText(el, minSize, maxSize);
+        });
+        ro.observe(el.parentElement);
+    } else {
+        window.addEventListener('resize', () => {
+            fitText(el, minSize, maxSize);
+        });
+    }
 }
 
 
@@ -346,16 +351,16 @@ const client = new StreamerbotClient({
 });
 
 window.addEventListener('open', () => {
-  console.log(`✨ WS connecté à ${WS_URL}`);
+    console.log(`✨ WS connecté à ${WS_URL}`);
 
-  // On s'abonne aux événements Custom (catégorie General)
-  window.send(JSON.stringify({
-    request: "Subscribe",
-    id:      "sub_custom",
-    events: {
-      "General": ["Custom"]
-    }
-  }));
+    // On s'abonne aux événements Custom (catégorie General)
+    window.send(JSON.stringify({
+        request: "Subscribe",
+        id: "sub_custom",
+        events: {
+            "General": ["Custom"]
+        }
+    }));
 });
 
 function SetConnectionStatus(connected) {
@@ -450,9 +455,9 @@ window.addEventListener("CustomEvent", (event) => {
 });
 
 window.addEventListener('load', () => {
-  const msg = document.querySelector('.message');
-  if (msg) {
-    // On veut une police mini=120px, maxi=200px
-    makeTextFit(msg, 120, 200);
-  }
+    const msg = document.querySelector('.message');
+    if (msg) {
+        // On veut une police mini=120px, maxi=200px
+        makeTextFit(msg, 120, 200);
+    }
 });
