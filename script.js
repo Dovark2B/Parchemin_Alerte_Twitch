@@ -79,6 +79,7 @@ function getEventStamp(eventInfo) {
 }
 
 function updateAlertContainer(data) {
+    console.log("⚙️ Twitch.Raid payload.data:", data.data);
     const eventName = getEventStamp(data?.event);
     const structure = eventResponseStructure[eventName];
     if (!structure) return;
@@ -90,10 +91,11 @@ function updateAlertContainer(data) {
     }
 
     const userName =
-        data?.data?.user?.name       
+
+        data?.data?.user_name    
+        || data?.data?.user?.name       
         || data?.data?.username     
         || data?.data?.displayName  
-        || data?.data?.user_name    
         || "Invité";
     const recipient = data?.data?.recipient?.name
         || data?.data?.recipientUser
@@ -102,7 +104,7 @@ function updateAlertContainer(data) {
     const bits = data?.data?.bits || "696969";
     const months = data?.data?.cumulativeMonths || "69";
     const gifts = data?.data?.gifts || "69";
-    const viewers = data?.data?.viewerCount || "696969";
+    const viewers = data?.data?.viewerCount || data?.data?.viewers || "696969";
     const amount = data?.data?.amount || "0";
 
     let message = replaceToken(
@@ -315,40 +317,30 @@ function showAlert(text = "Alerte") {
 }
 
 const client = new StreamerbotClient({
-    host: "127.0.0.1",
-    port: 8080,
-    subscribe: "*",
-    onConnect: (data) => {
-        if (DEBUG_MODE) console.log("Connected to Streamer.bot:", data);
-        SetConnectionStatus(true);
-    },
-    onDisconnect: () => {
-        if (DEBUG_MODE) console.warn("Disconnected from Streamer.bot");
-        SetConnectionStatus(false);
-    },
-    onData: (data) => {
-        if (DEBUG_MODE) console.log("Streamer.bot event:", data);
+  host: "127.0.0.1",
+  port: 8080,
+  subscribe: "*",  // on veut **tout**
+  onConnect:    () => SetConnectionStatus(true),
+  onDisconnect: () => SetConnectionStatus(false),
+  onData: (payload) => {
+    if (!payload.event) return;
+    const eventName = `${payload.event.source}.${payload.event.type}`;
 
-        const eventName = getEventStamp(data?.event);
-
-        // Si c'est un event Twitch/TipeeeStream connu
-        if (Object.keys(eventResponseStructure).includes(eventName)) {
-            updateAlertContainer(data);
-            SetConnectionStatus(true);
-            return;
-        }
-
-        // Si c'est un event Custom (test trigger Streamer.bot)
-        if (data?.event?.source === "General" && data?.event?.type === "Custom") {
-            // On transmet TOUT le payload du trigger, pas un objet simplifié
-            window.dispatchEvent(new CustomEvent("CustomEvent", {
-                detail: data.data // <-- ici, on envoie tout le data du trigger
-            }));
-            SetConnectionStatus(true);
-            return;
-        }
+    // 1) Si c'est un event couché dans eventResponseStructure → alert normale
+    if (eventResponseStructure[eventName]) {
+      updateAlertContainer(payload);
+      return;
     }
+
+    // 2) Si c'est un Custom (test trigger) → on rebalance via CustomEvent
+    if (payload.event.source === "General" && payload.event.type === "Custom") {
+      window.dispatchEvent(
+        new CustomEvent("CustomEvent", { detail: payload.data })
+      );
+    }
+  }
 });
+
 
 window.addEventListener('open', () => {
     console.log(`✨ WS connecté à ${WS_URL}`);
