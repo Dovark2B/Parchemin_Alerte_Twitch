@@ -92,10 +92,11 @@ function updateAlertContainer(data) {
 
     const userName =
 
-        data?.data?.user_name    
+        data?.data?.from_broadcaster_user_name
+        || data?.data?.user_name    
         || data?.data?.user?.name       
         || data?.data?.username     
-        || data?.data?.displayName  
+        || data?.data?.displayName
         || "Invité";
     const recipient = data?.data?.recipient?.name
         || data?.data?.recipientUser
