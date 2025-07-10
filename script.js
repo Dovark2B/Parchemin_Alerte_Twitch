@@ -90,31 +90,47 @@ function updateAlertContainer(data) {
         return;
     }
 
-    const userName =
+    const d = data.data;
+    let userName;
+    // Cas particulier du raid : on utilise les champs Twitch.Raid
+    if (eventName === "Twitch.Raid") {
+        userName =
+            d.from_broadcaster_user_name   // nom affiché du raider
+         || d.from_broadcaster_user_login  // login du raider
+         || "Invité";
+    } else {
+        // Tous les autres events (follow, sub, cheer, donation…)
+        userName =
+            d.user_name       // champ standard (Twitch.Follow, etc.)
+         || d.user?.name     // fallback dans l'objet user
+         || d.username       // éventuellement fourni
+         || d.displayName    // ou displayName
+         || "Invité";
+    }
 
-        data?.data?.from_broadcaster_user_name
-        || data?.data?.user_name    
-        || data?.data?.user?.name       
-        || data?.data?.username     
-        || data?.data?.displayName
-        || "Invité";
-    const recipient = data?.data?.recipient?.name
-        || data?.data?.recipientUser
-        || data?.data?.recipientUserName
-        || "LaMoche";
-    const bits = data?.data?.bits || "696969";
-    const months = data?.data?.cumulativeMonths || "69";
-    const gifts = data?.data?.gifts || "69";
-    const viewers = data?.data?.viewerCount || data?.data?.viewers || "696969";
-    const amount = data?.data?.amount || "0";
+    const recipient = 
+        d.recipient?.name ||
+        d.recipientUser ||
+        d.recipientUserName ||
+        "LaMoche";
 
+    const bits   = d.bits || "696969";
+    const months = d.cumulativeMonths || "69";
+    const gifts  = d.gifts || "69";
+
+    // Nombre de viewers : viewerCount pour la plupart, viewers seulement pour le raid
+    const viewers = eventName === "Twitch.Raid"
+        ? (d.viewers || 0)
+        : (d.viewerCount || d.viewers || "696969");
+
+    const amount = d.amount || "0";
+
+    // Génération et token replacement
     let message = replaceToken(
         selectRandomItemFromArray(
-            data?.data?.isAnonymous && structure.anonMessage
-                ? structure.anonMessage
-                : structure.message
+            (d.isAnonymous && structure.anonMessage) ? structure.anonMessage : structure.message
         ),
-        data.data
+        d
     );
 
     message = message
@@ -128,6 +144,7 @@ function updateAlertContainer(data) {
 
     showAlert(message);
 }
+
 
 
 
