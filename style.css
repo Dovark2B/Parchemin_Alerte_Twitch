@@ -285,7 +285,7 @@ span.amount {
   background: linear-gradient(to right,
       #e7bf82 0%,
       rgba(238, 205, 85, 0.445) 50%,
-      rgba(8, 5, 0, 0.911) 100%);
+      rgba(41, 26, 0, 0.911) 100%);
   opacity: 0;
   animation: moveHighlight2 1.8s ease-in-out forwards;
   animation-delay: 1.3s;
