@@ -81,96 +81,96 @@ function getEventStamp(eventInfo) {
 }
 
 function updateAlertContainer(data) {
-    console.log("⚙️ Twitch.Raid payload.data:", data.data);
     const eventName = getEventStamp(data?.event);
-    const structure = eventResponseStructure[eventName];
-    if (!structure) return;
+    if (!eventResponseStructure[eventName]) return;
 
-    // Filtrer les cheers trop petits
+    // Filtrage des small cheers
     if (eventName === "Twitch.Cheer" && (data?.data?.bits || 0) < 2) {
         if (DEBUG_MODE) console.log("Cheer ignoré : moins de 2 bits");
         return;
     }
 
-    const d = data.data;
-    let userName;
-    // Cas particulier du raid : on utilise les champs Twitch.Raid
-    if (eventName === "Twitch.Raid") {
-        userName =
-            d.from_broadcaster_user_name   // nom affiché du raider
-            || d.from_broadcaster_user_login  // login du raider
-            || "Invité";
-    } else {
-        // Tous les autres events (follow, sub, cheer, donation…)
-        userName =
-            d.user_name       // champ standard (Twitch.Follow, etc.)
-            || d.user?.name     // fallback dans l'objet user
-            || d.username       // éventuellement fourni
-            || d.displayName    // ou displayName
-            || "Invité";
-    }
-
-    const recipient =
-        d.recipient?.name ||
-        d.recipientUser ||
-        d.recipientUserName ||
-        "LaMoche";
-
-    const bits = d.bits || "696969";
-    const months = d.cumulativeMonths || "69";
-    const gifts = d.gifts || "69";
-
-    // Nombre de viewers : viewerCount pour la plupart, viewers seulement pour le raid
-    const viewers = eventName === "Twitch.Raid"
-        ? (d.viewers || 0)
-        : (d.viewerCount || d.viewers || "696969");
-
-    const amount = d.amount || "0";
-
-    // Génération et token replacement
-    let message = replaceToken(
-        selectRandomItemFromArray(
-            (d.isAnonymous && structure.anonMessage) ? structure.anonMessage : structure.message
-        ),
-        d
-    );
-
-    message = message
-        .replace(/\[user\]/g, `<span class="user">${userName}</span>`)
-        .replace(/\[recipient\]/g, `<span class="recipient">${recipient}</span>`)
-        .replace(/\[bits\]/g, `<span class="value">${bits}</span>`)
-        .replace(/\[months\]/g, `<span class="month">${months}</span>`)
-        .replace(/\[gifts\]/g, `<span class="gifts">${gifts}</span>`)
-        .replace(/\[viewers\]/g, `<span class="viewers">${viewers}</span>`)
-        .replace(/\[amount\]/g, `<span class="amount">${amount}</span>`);
-
-    showAlert(message);
-
-    if (eventName === "TipeeeStream.Donation") {
-        // on récupère le message et on enlève les espaces superflus
-        const userMsg = (typeof d.message === 'string') ? d.message.trim() : "";
-
-        // si userMsg n'est pas vide, on planifie la deuxième animation
-        if (userMsg.length > 0) {
-            setTimeout(() => {
-                showAlert(`<span class="donor-message">${userMsg}</span>`, 20000);
-            }, defaultEventDisplayTime);
-        }
-    }
+    // On met simplement l’objet `data` dans la queue
+    eventQueue.push(data);
+    processEventQueue();
 }
 
+function processEventQueue() {
+    // Si on affiche déjà un événement, on attend qu’il se termine
+    if (showingEvent) return;
+    // Si la queue est vide, rien à faire
+    if (eventQueue.length === 0) return;
 
+    // On passe en mode « affichage »
+    showingEvent = true;
 
+    const data = eventQueue.shift();
+    handleEventDisplay(data, () => {
+        // Quand l’affichage est fini, on libère et on relance
+        showingEvent = false;
+        processEventQueue();
+    });
+}
 
+function handleEventDisplay(payload, onDone) {
+    const { event, data: d } = payload;
+    const eventName = getEventStamp(event);
+    const structure = eventResponseStructure[eventName];
+    let userName, recipient, bits, months, gifts, viewers, amount;
 
+    // --- Récupération des champs (identique à avant) ---
+    if (eventName === "Twitch.Raid") {
+        userName = d.from_broadcaster_user_name || d.from_broadcaster_user_login || "Invité";
+    } else {
+        userName = d.user_name || d.user?.name || d.username || d.displayName || "Invité";
+    }
+    recipient = d.recipient?.name || d.recipientUser || d.recipientUserName || "LaMoche";
+    bits      = d.bits || "696969";
+    months    = d.cumulativeMonths || "69";
+    gifts     = d.gifts || "69";
+    viewers   = (eventName === "Twitch.Raid" ? d.viewers : (d.viewerCount || d.viewers)) || "696969";
+    amount    = d.amount || "0";
 
-    function updateSoundEl(structure) {
-        const soundEl = document.getElementById("sound");
-        const soundFile = selectRandomItemFromArray(structure.sounds);
-        if (soundEl && soundFile) {
-            soundEl.src = soundFile;
+    // --- Génération du message HTML avec tokens ---
+    let message = replaceToken(
+        selectRandomItemFromArray(
+            (d.isAnonymous && structure.anonMessage)
+                ? structure.anonMessage
+                : structure.message
+        ),
+        d
+    )
+    .replace(/\[user\]/g, `<span class="user">${userName}</span>`)
+    .replace(/\[recipient\]/g, `<span class="recipient">${recipient}</span>`)
+    .replace(/\[bits\]/g, `<span class="value">${bits}</span>`)
+    .replace(/\[months\]/g, `<span class="month">${months}</span>`)
+    .replace(/\[gifts\]/g, `<span class="gifts">${gifts}</span>`)
+    .replace(/\[viewers\]/g, `<span class="viewers">${viewers}</span>`)
+    .replace(/\[amount\]/g, `<span class="amount">${amount}</span>`);
+
+    // --- Affichage principal ---
+    showAlert(message);
+
+    // Durée totale d’affichage
+    const displayTime = defaultEventDisplayTime;
+
+    // Gestion spécifique du message secondaire (donation)
+    if (eventName === "TipeeeStream.Donation") {
+        const userMsg = (typeof d.message === 'string') ? d.message.trim() : "";
+        if (userMsg.length > 0) {
+            // On planifie la deuxième alerte après la première
+            setTimeout(() => {
+                showAlert(`<span class="donor-message">${userMsg}</span>`, displayTime);
+            }, displayTime);
+            // On attend la fin de la seconde
+            setTimeout(onDone, displayTime * 2);
+            return;
         }
     }
+
+    // Sinon on attend juste la fin de l’animation
+    setTimeout(onDone, displayTime);
+}
 
     function launchAnimation(displayTime = defaultEventDisplayTime) {
         const parchment = document.querySelector('.parchment-container');
