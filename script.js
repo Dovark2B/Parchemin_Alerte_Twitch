@@ -245,7 +245,7 @@ function applyFrenchSpacing(text) {
  * tout l'espace disponible sans déborder (sauf une petite tolérance), 
  * en restant entre minSize et maxSize (px).
  */
-function fitText(el, minSize = 120, maxSize = 200) {
+function fitText(el, minSize = 72, maxSize = 256) {
     const container = el.parentElement;
     if (!container) return;
 
@@ -308,7 +308,7 @@ function fitText(el, minSize = 120, maxSize = 200) {
     el.style.clipPath = originalClip;
 }
 
-function makeTextFit(el, minSize = 120, maxSize = 200) {
+function makeTextFit(el, minSize = 72, maxSize = 256) {
     fitText(el, minSize, maxSize);
 
     if (typeof ResizeObserver !== 'undefined') {
@@ -327,7 +327,7 @@ function makeTextFit(el, minSize = 120, maxSize = 200) {
 
 window.addEventListener('resize', () => {
     const message = document.querySelector('.message');
-    makeTextFit(message, 120, 200);
+    makeTextFit(message, 72, 256);
 });
 
 function showAlert(text = "Alerte", displayTime = defaultEventDisplayTime) {
@@ -345,7 +345,7 @@ function showAlert(text = "Alerte", displayTime = defaultEventDisplayTime) {
     messageDiv.style.fontFamily = "'Cinzel', Georgia, serif";
     messageDiv.style.color = "#331e01";
 
-    makeTextFit(messageDiv, 120, 200);
+    makeTextFit(messageDiv, 72, 256);
 
     launchAnimation(displayTime);
 }
@@ -485,6 +485,6 @@ window.addEventListener('load', () => {
     const msg = document.querySelector('.message');
     if (msg) {
         // On veut une police mini=120px, maxi=200px
-        makeTextFit(msg, 120, 200);
+        makeTextFit(msg, 72, 256);
     }
 });
