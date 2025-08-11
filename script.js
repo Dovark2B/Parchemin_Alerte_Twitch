@@ -48,6 +48,21 @@ const eventResponseStructure = {
     }
 };
 
+function getNumberFrom(obj, keys) {
+    for (const k of keys) {
+        // supporte les chemins genre "data.total"
+        const parts = k.split('.');
+        let ref = obj;
+        for (const p of parts) {
+            if (ref && Object.prototype.hasOwnProperty.call(ref, p)) ref = ref[p];
+            else { ref = undefined; break; }
+        }
+        const n = Number(ref);
+        if (Number.isFinite(n)) return n;
+    }
+    return null;
+}
+
 
 function replaceToken(targetString, dataSet) {
     return targetString.replace(/{(\S*)}/g, function (m, key) {
@@ -118,18 +133,30 @@ function handleEventDisplay(payload, onDone) {
     const structure = eventResponseStructure[eventName];
     let userName, recipient, bits, months, gifts, viewers, amount;
 
-    // --- Récupération des champs (identique à avant) ---
     if (eventName === "Twitch.Raid") {
         userName = d.from_broadcaster_user_name || d.from_broadcaster_user_login || "Invité";
     } else {
         userName = d.user_name || d.user?.name || d.username || d.displayName || "Invité";
     }
     recipient = d.recipient?.name || d.recipientUser || d.recipientUserName || "LaMoche";
-    bits = d.bits || "696969";
-    months = d.cumulativeMonths || "69";
-    gifts = d.gifts || "69";
-    viewers = (eventName === "Twitch.Raid" ? d.viewers : (d.viewerCount || d.viewers)) || "696969";
-    amount = d.amount || "0";
+    bits = (d.bits ?? 0).toString();
+    months = (d.cumulativeMonths ?? d.months ?? 0).toString();
+
+    // >>> clés possibles pour une Gift Bomb selon la source
+    const giftsNum = getNumberFrom(d, [
+        "gifts", "totalGifts", "total", "count", "quantity", "giftCount"
+    ]);
+    gifts = (giftsNum ?? 0).toString();
+
+    viewers = (eventName === "Twitch.Raid"
+        ? d.viewers
+        : (d.viewerCount ?? d.viewers)) ?? 0;
+    amount = (d.amount ?? 0).toString();
+
+    if (DEBUG_MODE && eventName === "Twitch.GiftBomb") {
+        console.log("[GiftBomb] payload:", d, "→ gifts=", gifts);
+    }
+
 
     // --- Génération du message HTML avec tokens ---
     let message = replaceToken(
