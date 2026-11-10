@@ -34,11 +34,11 @@ const eventResponseStructure = {
         title: ["[user] revient encore !"],
         message: ["[user] est là depuis [months] mois, merci !"]
     },
-    "Twitch/Subscriptions.GiftSub": {
+    "Twitch/Subscriptions.Gift Subscription": {
         title: ["[recipient] a reçu un sub !"],
         message: ["Merci [user] pour le sub offert a [recipient] !"]
     },
-    "Twitch/Subscriptions.GiftBomb": {
+    "Twitch/Subscriptions.Gift Bomb": {
         title: ["[user] régale !"],
         message: ["[user] a offert [gifts] subs, merci !"]
     },
@@ -332,29 +332,37 @@ function SetConnectionStatus(connected) {
 }
 
 // Initialisation du client Streamerbot officiel
+// Nom exact de l'action Streamer.bot responsable de l'alerte parchemin
+const ALERT_ACTION_NAME = "Alerte Parchemin";
+
 const client = new StreamerbotClient({
     host: "127.0.0.1",
     port: 8080,
     subscribe: {
-        "Raw": ["Action"] // On écoute uniquement les actions déclenchées (évite les inputs et ActionCompleted)
+        "Raw": ["Action"]
     },
     onConnect: () => SetConnectionStatus(true),
     onDisconnect: () => SetConnectionStatus(false),
     onData: (payload) => {
         if (!payload.event) return;
 
-        // On intercepte uniquement les événements Raw.Action
         if (payload.event.source === "Raw" && payload.event.type === "Action") {
             const args = payload.data?.arguments;
             if (!args) return;
 
-            // Clé construite depuis les métadonnées Streamerbot (ex: Twitch/Channel.Follow)
+            const actionName = payload.data?.name || "";
+
+            // On ignore toutes les actions, sauf celle dédiée au parchemin
+            if (actionName !== ALERT_ACTION_NAME) {
+                return;
+            }
+
             const category = args.triggerCategory || "Unknown";
             const name = args.triggerName || "Unknown";
             const eventKey = `${category}.${name}`;
 
             if (DEBUG_MODE) {
-                console.log(`[Streamerbot Raw Action] Trigger: ${eventKey}`, args);
+                console.log(`[Alerte Parchemin] ${eventKey}`, args);
             }
 
             updateAlertContainer({
